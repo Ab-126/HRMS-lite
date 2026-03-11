@@ -145,7 +145,7 @@ cp .env.example .env
 
 Your `.env` should look like:
 ```env
-REACT_APP_API_URL=http://localhost:8000/api/v1
+VITE_API_URL =http://localhost:8000/api/v1
 ```
 
 ```bash
@@ -234,7 +234,7 @@ ALLOWED_ORIGINS=https://your-frontend.vercel.app
 
 **Environment Variables on Vercel:**
 ```
-REACT_APP_API_URL=https://your-backend.onrender.com/api/v1
+VITE_API_URL =https://your-backend.onrender.com/api/v1
 ```
 
 ---
