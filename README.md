@@ -8,9 +8,9 @@ A lightweight Human Resource Management System built with FastAPI and React. All
 
 | Service  | URL |
 |----------|-----|
-| Frontend | https://hrms-lite.vercel.app |
-| Backend API | https://hrms-backend.onrender.com |
-| API Docs | https://hrms-backend.onrender.com/docs |
+| Frontend | https://hrms-lite-1qmt8168z-geekisaprogrammergmailcoms-projects.vercel.app |
+| Backend API | https://hrms-lite-4mvs.onrender.com |
+| API Docs | https://hrms-lite-4mvs.onrender.com/docs |
 
 ---
 
