@@ -3,17 +3,28 @@ import { Link } from "react-router-dom";
 import { getEmployees } from "../api/employees";
 import { getAttendance } from "../api/attendance";
 import Spinner from "../components/Spinner";
+import { Users, UserCheck, UserMinus, CalendarDays, ArrowRight } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
-function StatCard({ label, value, sub, iconBg, iconColor, icon }) {
+function StatCard({ label, value, sub, iconBg, iconColor, icon: Icon }) {
   return (
-    <div className="stat-card">
-      <div className="flex items-start justify-between">
-        <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">{label}</p>
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: iconBg, color: iconColor }}>{icon}</div>
-      </div>
-      <p className="text-3xl font-bold text-white mt-2">{value}</p>
-      {sub && <p className="text-xs text-slate-500">{sub}</p>}
-    </div>
+    <Card className="hover:shadow-md transition-all duration-200 hover:border-primary/30 group">
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground">{label}</p>
+            <div className="flex items-baseline gap-2">
+              <h2 className="text-3xl font-bold tracking-tight">{value}</h2>
+              {sub && <span className="text-xs text-muted-foreground">{sub}</span>}
+            </div>
+          </div>
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110" style={{ backgroundColor: iconBg, color: iconColor }}>
+            <Icon className="w-6 h-6" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -37,82 +48,92 @@ export default function Dashboard() {
   if (loading) return <div className="flex-1 flex items-center justify-center"><Spinner size="lg" /></div>;
 
   return (
-    <div className="flex-1 p-8 animate-fade-in">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-        <p className="text-sm text-slate-500 mt-1">
+    <div className="flex-1 p-8 space-y-8 animate-fade-in bg-slate-50/50 min-h-screen">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
+        <p className="text-muted-foreground">
           {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
         </p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard label="Total Employees" value={employees.length} sub={`${depts} department${depts !== 1 ? "s" : ""}`}
-          iconBg="rgba(59,130,246,0.15)" iconColor="#60a5fa"
-          icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard label="Total Employees" value={employees.length} sub={`${depts} depts`}
+          iconBg="rgb(239 246 255)" iconColor="rgb(59 130 246)" icon={Users}
         />
-        <StatCard label="Present Today" value={presentToday} sub={`of ${employees.length} marked`}
-          iconBg="rgba(16,185,129,0.15)" iconColor="#34d399"
-          icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>}
+        <StatCard label="Present Today" value={presentToday} sub={`of ${employees.length}`}
+          iconBg="rgb(209 250 229)" iconColor="rgb(16 185 129)" icon={UserCheck}
         />
-        <StatCard label="Absent Today" value={absentToday} sub="marked absent"
-          iconBg="rgba(239,68,68,0.15)" iconColor="#f87171"
-          icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>}
+        <StatCard label="Absent Today" value={absentToday} sub="marked"
+          iconBg="rgb(254 226 226)" iconColor="rgb(239 68 68)" icon={UserMinus}
         />
         <StatCard label="Total Records" value={attendance?.total || 0} sub="all time"
-          iconBg="rgba(168,85,247,0.15)" iconColor="#c084fc"
-          icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>}
+          iconBg="rgb(243 232 255)" iconColor="rgb(168 85 247)" icon={CalendarDays}
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-8">
         {/* Recent Employees */}
-        <div className="card">
-          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid #1e3a6e" }}>
-            <h2 className="text-sm font-semibold text-white">Recent Employees</h2>
-            <Link to="/employees" className="text-xs text-blue-400 hover:text-blue-300 transition-colors">View all →</Link>
-          </div>
-          <div>
-            {employees.slice(0, 5).map((emp) => (
-              <div key={emp.employee_id} className="flex items-center gap-3 px-5 py-3 transition-colors" style={{borderBottom:"1px solid rgba(30,58,110,0.4)"}}
-                onMouseEnter={e=>e.currentTarget.style.backgroundColor="#0f2040"}
-                onMouseLeave={e=>e.currentTarget.style.backgroundColor="transparent"}>
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold shrink-0" style={{ backgroundColor: "rgba(59,130,246,0.2)", border: "1px solid rgba(59,130,246,0.3)", color: "#60a5fa" }}>
-                  {emp.full_name.charAt(0).toUpperCase()}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-slate-200 truncate">{emp.full_name}</p>
-                  <p className="text-xs text-slate-500">{emp.department}</p>
-                </div>
-                <span className="ml-auto text-xs font-mono text-slate-600 shrink-0">{emp.employee_id}</span>
-              </div>
-            ))}
-            {employees.length === 0 && <p className="text-sm text-slate-500 text-center py-8">No employees yet.</p>}
-          </div>
-        </div>
-
-        {/* Departments */}
-        <div className="card">
-          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid #1e3a6e" }}>
-            <h2 className="text-sm font-semibold text-white">Departments</h2>
-            <span className="text-xs text-slate-500">{depts} total</span>
-          </div>
-          <div className="p-5 space-y-3">
-            {Object.entries(employees.reduce((acc, e) => { acc[e.department] = (acc[e.department] || 0) + 1; return acc; }, {}))
-              .sort((a, b) => b[1] - a[1])
-              .map(([dept, count]) => (
-                <div key={dept}>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm text-slate-300">{dept}</span>
-                    <span className="text-xs font-mono text-slate-500">{count}</span>
+        <Card className="flex flex-col">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 border-b">
+            <div className="space-y-1">
+              <CardTitle className="text-base">Recent Employees</CardTitle>
+              <CardDescription>Latest additions to your team.</CardDescription>
+            </div>
+            <Button variant="ghost" size="sm" asChild className="hidden sm:flex">
+              <Link to="/employees">
+                View all <ArrowRight className="ml-2 w-4 h-4" />
+              </Link>
+            </Button>
+          </CardHeader>
+          <CardContent className="p-0 flex-1">
+            <div className="divide-y divide-border">
+              {employees.slice(0, 5).map((emp) => (
+                <div key={emp.employee_id} className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm">
+                    {emp.full_name.charAt(0).toUpperCase()}
                   </div>
-                  <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "#0f2040" }}>
-                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${(count / employees.length) * 100}%`, backgroundColor: "#3b82f6" }} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-foreground truncate">{emp.full_name}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{emp.department}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-mono text-muted-foreground bg-slate-100 px-2 py-1 rounded-md">{emp.employee_id}</span>
                   </div>
                 </div>
               ))}
-            {employees.length === 0 && <p className="text-sm text-slate-500 text-center py-8">No data yet.</p>}
-          </div>
-        </div>
+              {employees.length === 0 && <p className="text-sm text-muted-foreground text-center py-12">No employees yet.</p>}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Departments */}
+        <Card className="flex flex-col">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 border-b">
+            <div className="space-y-1">
+              <CardTitle className="text-base">Departments</CardTitle>
+              <CardDescription>Employee distribution.</CardDescription>
+            </div>
+            <div className="bg-primary/10 text-primary text-xs font-medium px-2.5 py-1 rounded-full">{depts} total</div>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="space-y-5">
+              {Object.entries(employees.reduce((acc, e) => { acc[e.department] = (acc[e.department] || 0) + 1; return acc; }, {}))
+                .sort((a, b) => b[1] - a[1])
+                .map(([dept, count]) => (
+                  <div key={dept}>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-medium text-foreground">{dept}</span>
+                      <span className="text-sm text-muted-foreground">{count} employees</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                      <div className="h-full bg-primary rounded-full transition-all duration-1000 ease-out" style={{ width: `${(count / employees.length) * 100}%` }} />
+                    </div>
+                  </div>
+                ))}
+              {employees.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">No data yet.</p>}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

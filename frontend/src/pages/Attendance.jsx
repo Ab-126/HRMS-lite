@@ -5,16 +5,28 @@ import { useToast } from '../hooks/useToast'
 import Modal from '../components/Modal'
 import ConfirmDialog from '../components/ConfirmDialog'
 import Spinner from '../components/Spinner'
-import PageHeader from '../components/PageHeader'
-import ErrorBanner from '../components/ErrorBanner'
-import Empty from '../components/Empty'
+import EmptyState from '../components/EmptyState'
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent } from "@/components/ui/card"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { CalendarCheck, Filter, Trash2, X, Plus, CalendarDays } from "lucide-react"
 
 const today = () => new Date().toISOString().split('T')[0]
 
 const fmtDate = (d) =>
   new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
-/* ── Mark Attendance Modal ─────────────────────────────────────────────── */
 function MarkAttendanceModal({ onClose, onMarked }) {
   const [employees, setEmployees] = useState([])
   const [loadingEmps, setLoadingEmps] = useState(true)
@@ -55,23 +67,22 @@ function MarkAttendanceModal({ onClose, onMarked }) {
 
   return (
     <Modal open={true} title="Mark Attendance" onClose={onClose}>
-      <div className="space-y-4">
-        {/* Employee */}
-        <div>
-          <label className="text-xs font-medium text-slate-400 mb-1.5 block">Employee *</label>
+      <div className="space-y-5">
+        <div className="space-y-2">
+          <Label>Employee *</Label>
           {loadingEmps ? (
-            <div className="flex items-center gap-2 text-slate-400 text-sm py-2">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm py-2">
               <Spinner size="sm" /> Loading employees…
             </div>
           ) : employees.length === 0 ? (
-            <p className="text-slate-400 text-sm">No employees found. Add employees first.</p>
+            <p className="text-muted-foreground text-sm">No employees found. Add employees first.</p>
           ) : (
             <select
-              className="input"
+              className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={form.employee_id}
               onChange={(e) => { setForm((p) => ({ ...p, employee_id: e.target.value })); setErrors((p) => ({ ...p, employee_id: '' })) }}
             >
-              <option value="">Select employee…</option>
+              <option value="" disabled>Select employee…</option>
               {employees.map((emp) => (
                 <option key={emp.employee_id} value={emp.employee_id}>
                   {emp.full_name} ({emp.employee_id})
@@ -79,65 +90,50 @@ function MarkAttendanceModal({ onClose, onMarked }) {
               ))}
             </select>
           )}
-          {errors.employee_id && <p className="text-red-400 text-xs mt-1">{errors.employee_id}</p>}
+          {errors.employee_id && <p className="text-destructive text-xs mt-1">{errors.employee_id}</p>}
         </div>
 
-        {/* Date */}
-        <div>
-          <label className="text-xs font-medium text-slate-400 mb-1.5 block">Date *</label>
-          <input
+        <div className="space-y-2">
+          <Label>Date *</Label>
+          <Input
             type="date"
-            className="input"
             value={form.date}
             max={today()}
             onChange={(e) => { setForm((p) => ({ ...p, date: e.target.value })); setErrors((p) => ({ ...p, date: '' })) }}
           />
-          {errors.date && <p className="text-red-400 text-xs mt-1">{errors.date}</p>}
+          {errors.date && <p className="text-destructive text-xs mt-1">{errors.date}</p>}
         </div>
 
-        {/* Status toggle */}
-        <div>
-          <label className="text-xs font-medium text-slate-400 mb-1.5 block">Status *</label>
+        <div className="space-y-2">
+          <Label>Status *</Label>
           <div className="flex gap-3">
             {['Present', 'Absent'].map((s) => (
-              <button
+              <Button
                 key={s}
                 type="button"
+                variant={form.status === s ? (s === 'Present' ? 'default' : 'destructive') : 'outline'}
+                className={form.status === s && s === 'Present' ? 'bg-emerald-500 hover:bg-emerald-600 text-white flex-1' : 'flex-1'}
                 onClick={() => setForm((p) => ({ ...p, status: s }))}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all duration-200"
-                style={
-                  form.status === s
-                    ? s === 'Present'
-                      ? { backgroundColor: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.4)', color: '#34d399' }
-                      : { backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.4)', color: '#f87171' }
-                    : { backgroundColor: '#0f2040', border: '1px solid #1e3a6e', color: '#64748b' }
-                }
               >
                 {s}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
 
-        {apiError && <ErrorBanner message={apiError} />}
+        {apiError && <div className="rounded-md bg-destructive/15 text-destructive border border-destructive/20 px-4 py-3 text-sm flex gap-2"><div className="font-semibold">Error:</div>{apiError}</div>}
 
-        {/* Actions */}
         <div className="flex gap-3 justify-end pt-2">
-          <button className="btn-ghost" onClick={onClose} disabled={loading}>Cancel</button>
-          <button className="btn-primary" onClick={handleSubmit} disabled={loading || employees.length === 0}>
-            {loading
-              ? <div className="w-3.5 h-3.5 rounded-full animate-spin" style={{ border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white' }} />
-              : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M9 12l2 2 4-4"/><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            }
-            Mark Attendance
-          </button>
+          <Button variant="ghost" onClick={onClose} disabled={loading}>Cancel</Button>
+          <Button onClick={handleSubmit} disabled={loading || employees.length === 0}>
+            {loading ? "Marking..." : "Mark Attendance"}
+          </Button>
         </div>
       </div>
     </Modal>
   )
 }
 
-/* ── Main Page ─────────────────────────────────────────────────────────── */
 export default function Attendance() {
   const { toast } = useToast()
   const [records, setRecords] = useState([])
@@ -204,128 +200,135 @@ export default function Attendance() {
   }
 
   return (
-    <div className="flex-1 p-8 animate-fade-in">
-      <PageHeader
-        title="Attendance"
-        subtitle="Track and manage daily employee attendance"
-        action={
-          <button className="btn-primary" onClick={() => setShowMark(true)}>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Mark Attendance
-          </button>
-        }
-      />
+    <div className="flex-1 p-8 space-y-6 animate-fade-in bg-slate-50/50 min-h-screen">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Attendance</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Track and manage daily employee attendance</p>
+        </div>
+        <Button onClick={() => setShowMark(true)} className="w-full sm:w-auto">
+          <CalendarCheck className="mr-2 h-4 w-4" /> Mark Attendance
+        </Button>
+      </div>
 
-      {error && <div className="mb-6"><ErrorBanner message={error} onRetry={() => load()} /></div>}
+      {error && <div className="rounded-md bg-destructive/15 text-destructive border border-destructive/20 px-4 py-3 text-sm flex justify-between items-center"><div className="flex gap-2"><div className="font-semibold">Error:</div>{error}</div><Button variant="outline" size="sm" onClick={() => load()}>Retry</Button></div>}
 
-      {/* Summary pills */}
-      <div className="flex gap-3 mb-6 flex-wrap">
-        {[
-          { label: 'Total Records', val: summary.total, style: { border: '1px solid #1e3a6e', color: '#cbd5e1' } },
-          { label: 'Present', val: summary.total_present, style: { border: '1px solid rgba(16,185,129,0.3)', color: '#34d399', backgroundColor: 'rgba(16,185,129,0.05)' } },
-          { label: 'Absent',  val: summary.total_absent,  style: { border: '1px solid rgba(239,68,68,0.3)',  color: '#f87171', backgroundColor: 'rgba(239,68,68,0.05)'  } },
-        ].map(({ label, val, style }) => (
-          <div key={label} className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold" style={style}>
-            <span>{val}</span>
-            <span className="font-normal opacity-70">{label}</span>
-          </div>
-        ))}
+      <div className="flex flex-wrap gap-4">
+        <Badge variant="outline" className="px-4 py-1.5 text-sm bg-background">
+          Total Records: <span className="font-bold ml-1">{summary.total}</span>
+        </Badge>
+        <Badge variant="outline" className="px-4 py-1.5 text-sm bg-emerald-50 text-emerald-700 border-emerald-200">
+          Present: <span className="font-bold ml-1">{summary.total_present}</span>
+        </Badge>
+        <Badge variant="outline" className="px-4 py-1.5 text-sm bg-rose-50 text-rose-700 border-rose-200">
+          Absent: <span className="font-bold ml-1">{summary.total_absent}</span>
+        </Badge>
       </div>
 
       {/* Filters */}
-      <div className="card p-4 mb-6 flex flex-wrap items-end gap-3">
-        <div className="flex items-center gap-2 text-slate-400">
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-          <span className="text-xs font-semibold uppercase tracking-widest">Filter</span>
-        </div>
-        <div className="flex-1 min-w-40">
-          <label className="text-xs font-medium text-slate-400 mb-1 block">By Date</label>
-          <input type="date" className="input text-sm" value={filterDate} onChange={(e) => setFilterDate(e.target.value)} />
-        </div>
-        <div className="flex-1 min-w-48">
-          <label className="text-xs font-medium text-slate-400 mb-1 block">By Employee</label>
-          <select className="input text-sm" value={filterEmpId} onChange={(e) => setFilterEmpId(e.target.value)}>
-            <option value="">All employees</option>
-            {employees.map((e) => <option key={e.employee_id} value={e.employee_id}>{e.full_name}</option>)}
-          </select>
-        </div>
-        <button className="btn-primary py-2.5" onClick={applyFilters}>Apply</button>
-        {hasFilters && (
-          <button className="btn-ghost py-2.5" onClick={clearFilters}>
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            Clear
-          </button>
-        )}
-      </div>
+      <Card>
+        <CardContent className="p-4 flex flex-col sm:flex-row items-end gap-4">
+          <div className="flex items-center gap-2 text-muted-foreground pb-2 sm:pb-0">
+            <Filter className="w-4 h-4" />
+            <span className="text-sm font-medium">Filters</span>
+          </div>
+          <div className="flex-1 w-full sm:w-auto space-y-1.5">
+            <Label className="text-xs">By Date</Label>
+            <Input type="date" value={filterDate} onChange={(e) => setFilterDate(e.target.value)} />
+          </div>
+          <div className="flex-1 w-full sm:w-auto space-y-1.5">
+            <Label className="text-xs">By Employee</Label>
+            <select
+              className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              value={filterEmpId} onChange={(e) => setFilterEmpId(e.target.value)}>
+              <option value="">All employees</option>
+              {employees.map((e) => <option key={e.employee_id} value={e.employee_id}>{e.full_name}</option>)}
+            </select>
+          </div>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button onClick={applyFilters} className="flex-1 sm:flex-none">Apply</Button>
+            {hasFilters && (
+              <Button variant="ghost" onClick={clearFilters} className="px-3">
+                <X className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Table / Empty */}
-      {loading ? (
-        <div className="flex justify-center py-16"><Spinner size="lg" /></div>
-      ) : records.length === 0 ? (
-        <Empty
-          icon={() => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>}
-          title="No attendance records"
-          description={hasFilters ? 'No records match your filters.' : 'Start marking attendance for your team.'}
-          action={!hasFilters && (
-            <button className="btn-primary" onClick={() => setShowMark(true)}>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Mark Attendance
-            </button>
-          )}
-        />
-      ) : (
-        <div className="card overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr style={{ borderBottom: '1px solid #1e3a6e' }}>
-                {['Employee', 'Department', 'Date', 'Status', ''].map((h) => (
-                  <th key={h} className="text-left text-xs font-medium text-slate-500 uppercase tracking-wider px-5 py-3">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
+      <div className="bg-card border border-border shadow-sm rounded-xl overflow-hidden min-h-[400px]">
+        {loading ? (
+          <div className="flex justify-center items-center h-full py-24"><Spinner size="lg" /></div>
+        ) : records.length === 0 ? (
+          <div className="h-full flex items-center justify-center">
+            <EmptyState
+              icon={<CalendarDays className="w-10 h-10 text-muted-foreground" />}
+              title="No attendance records"
+              description={hasFilters ? 'No records match your filters.' : 'Start marking attendance for your team.'}
+              action={!hasFilters && (
+                <Button onClick={() => setShowMark(true)}>
+                  <Plus className="mr-2 w-4 h-4" /> Mark Attendance
+                </Button>
+              )}
+            />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader className="bg-slate-50/50">
+              <TableRow>
+                <TableHead className="w-[300px]">Employee</TableHead>
+                <TableHead>Department</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {records.map((rec) => (
-                <tr key={rec.id} className="transition-colors group" style={{ borderBottom: '1px solid rgba(30,58,110,0.4)' }}
-                  onMouseEnter={e => e.currentTarget.style.backgroundColor = '#0f2040'}
-                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
-                  <td className="px-5 py-3.5">
+                <TableRow key={rec.id} className="group hover:bg-slate-50">
+                  <TableCell>
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                        style={{ backgroundColor: 'rgba(59,130,246,0.2)', border: '1px solid rgba(59,130,246,0.3)', color: '#60a5fa' }}>
+                      <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm shrink-0">
                         {(rec.employee_name || '?').charAt(0).toUpperCase()}
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-white">{rec.employee_name}</p>
-                        <p className="text-xs font-mono text-slate-500">{rec.employee_id}</p>
+                      <div className="flex flex-col">
+                        <span className="font-medium text-foreground">{rec.employee_name}</span>
+                        <span className="font-mono text-xs text-muted-foreground">{rec.employee_id}</span>
                       </div>
                     </div>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <span className="text-sm text-slate-400">
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-slate-500">
                       {employees.find((e) => e.employee_id === rec.employee_id)?.department || '—'}
                     </span>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <span className="font-mono text-xs text-slate-300">{fmtDate(rec.date)}</span>
-                  </td>
-                  <td className="px-5 py-3.5">
+                  </TableCell>
+                  <TableCell>
+                    <span className="font-mono text-xs text-slate-600 font-medium">{fmtDate(rec.date)}</span>
+                  </TableCell>
+                  <TableCell>
                     {rec.status === 'Present' ? (
-                      <span className="badge-present"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />Present</span>
+                      <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 pointer-events-none">Present</Badge>
                     ) : (
-                      <span className="badge-absent"><span className="w-1.5 h-1.5 rounded-full bg-red-400" />Absent</span>
+                      <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-200 pointer-events-none">Absent</Badge>
                     )}
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <button className="btn-danger opacity-0 group-hover:opacity-100 py-1.5 px-2.5 text-xs" onClick={() => setDeleteTarget(rec)}>
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                    </button>
-                  </td>
-                </tr>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => setDeleteTarget(rec)} 
+                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+            </TableBody>
+          </Table>
+        )}
+      </div>
 
       {showMark && (
         <MarkAttendanceModal

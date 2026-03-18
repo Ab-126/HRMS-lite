@@ -1,30 +1,20 @@
-import { useState, useCallback, useContext, createContext } from "react";
-
-const ToastContext = createContext(null);
-
-let idCounter = 0;
+import { toast as sonnerToast } from "sonner";
 
 export function ToastProvider({ children }) {
-  const [toasts, setToasts] = useState([]);
-
-  const toast = useCallback((message, type = "info") => {
-    const id = ++idCounter;
-    setToasts((prev) => [...prev, { id, message, type }]);
-  }, []);
-
-  const dismiss = useCallback((id) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
-
-  return (
-    <ToastContext.Provider value={{ toasts, toast, dismiss }}>
-      {children}
-    </ToastContext.Provider>
-  );
+  // ToastProvider is just a pass-through now, since Toaster is rendered in App.js
+  return <>{children}</>;
 }
 
 export function useToast() {
-  const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error("useToast must be used within ToastProvider");
-  return ctx;
+  const toast = (message, type = "info") => {
+    if (type === "success") {
+      sonnerToast.success(message);
+    } else if (type === "error") {
+      sonnerToast.error(message);
+    } else {
+      sonnerToast(message);
+    }
+  };
+
+  return { toast, dismiss: sonnerToast.dismiss };
 }

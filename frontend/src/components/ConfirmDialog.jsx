@@ -1,23 +1,38 @@
-import Modal from "./Modal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Loader2 } from "lucide-react";
 
 export default function ConfirmDialog({ open, onClose, onConfirm, title, message, loading }) {
   return (
-    <Modal open={open} onClose={onClose} title={title}>
-      <p className="text-sm text-slate-400 mb-6">{message}</p>
-      <div className="flex gap-3 justify-end">
-        <button onClick={onClose} className="btn-ghost" disabled={loading}>Cancel</button>
-        <button
-          onClick={onConfirm}
-          disabled={loading}
-          className="text-white font-medium px-4 py-2 rounded-lg transition-all duration-200 text-sm disabled:opacity-50 flex items-center gap-2"
-          style={{ backgroundColor: "rgba(239,68,68,0.85)" }}
-          onMouseEnter={e => e.currentTarget.style.backgroundColor="rgba(239,68,68,1)"}
-          onMouseLeave={e => e.currentTarget.style.backgroundColor="rgba(239,68,68,0.85)"}
-        >
-          {loading && <div className="w-3.5 h-3.5 rounded-full animate-spin" style={{ border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "white" }} />}
-          Delete
-        </button>
-      </div>
-    </Modal>
+    <AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription className="text-muted-foreground">{message}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={onClose} disabled={loading}>Cancel</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={(e) => { 
+              e.preventDefault(); 
+              onConfirm(); 
+            }} 
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors" 
+            disabled={loading}
+          >
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

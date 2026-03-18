@@ -5,6 +5,17 @@ import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import Spinner from "../components/Spinner";
 import EmptyState from "../components/EmptyState";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Search, Plus, Trash2, Users } from "lucide-react";
 
 const DEPTS = ["Engineering","Product","Design","Marketing","Sales","HR","Finance","Operations","Legal"];
 
@@ -14,33 +25,32 @@ function AddEmployeeForm({ onSubmit, loading, error }) {
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSubmit(form); }} className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="text-xs font-medium text-slate-400 mb-1.5 block">Employee ID *</label>
-          <input className="input" placeholder="e.g. EMP001" value={form.employee_id} onChange={set("employee_id")} required />
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">Employee ID *</label>
+          <Input placeholder="e.g. EMP001" value={form.employee_id} onChange={set("employee_id")} required />
         </div>
-        <div>
-          <label className="text-xs font-medium text-slate-400 mb-1.5 block">Full Name *</label>
-          <input className="input" placeholder="John Doe" value={form.full_name} onChange={set("full_name")} required />
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">Full Name *</label>
+          <Input placeholder="John Doe" value={form.full_name} onChange={set("full_name")} required />
         </div>
       </div>
-      <div>
-        <label className="text-xs font-medium text-slate-400 mb-1.5 block">Email Address *</label>
-        <input className="input" type="email" placeholder="john@company.com" value={form.email} onChange={set("email")} required />
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-foreground">Email Address *</label>
+        <Input type="email" placeholder="john@company.com" value={form.email} onChange={set("email")} required />
       </div>
-      <div>
-        <label className="text-xs font-medium text-slate-400 mb-1.5 block">Department *</label>
-        <select className="input" value={form.department} onChange={set("department")} required>
-          <option value="">Select department</option>
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-foreground">Department *</label>
+        <select className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" value={form.department} onChange={set("department")} required>
+          <option value="" disabled>Select department</option>
           {DEPTS.map((d) => <option key={d} value={d}>{d}</option>)}
         </select>
       </div>
-      {error && <div className="rounded-lg px-3 py-2.5 text-sm text-red-400" style={{ backgroundColor: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)" }}>{error}</div>}
-      <div className="flex justify-end pt-1">
-        <button type="submit" disabled={loading} className="btn-primary">
-          {loading && <div className="w-3.5 h-3.5 rounded-full animate-spin" style={{ border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "white" }} />}
-          Add Employee
-        </button>
+      {error && <div className="rounded-md bg-destructive/15 text-destructive border border-destructive/20 px-4 py-3 text-sm flex gap-2"><div className="font-semibold">Error:</div>{error}</div>}
+      <div className="flex justify-end pt-4">
+        <Button type="submit" disabled={loading} className="w-full sm:w-auto">
+          {loading ? "Adding..." : "Add Employee"}
+        </Button>
       </div>
     </form>
   );
@@ -91,84 +101,108 @@ export default function Employees() {
   );
 
   return (
-    <div className="flex-1 p-8 animate-fade-in">
-      <div className="flex items-center justify-between mb-8">
+    <div className="flex-1 p-8 space-y-6 animate-fade-in bg-slate-50/50 min-h-screen">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Employees</h1>
-          <p className="text-sm text-slate-500 mt-1">{employees.length} total</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Employees</h1>
+          <p className="text-muted-foreground mt-1 text-sm">{employees.length} total team members</p>
         </div>
-        <button className="btn-primary" onClick={() => { setAddOpen(true); setAddError(""); }}>
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Add Employee
-        </button>
+        <Button onClick={() => { setAddOpen(true); setAddError(""); }} className="w-full sm:w-auto">
+          <Plus className="mr-2 h-4 w-4" /> Add Employee
+        </Button>
       </div>
 
-      <div className="relative mb-5">
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input className="input pl-9 max-w-sm" placeholder="Search by name, ID, or department…" value={search} onChange={(e) => setSearch(e.target.value)} />
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input 
+          className="pl-9 bg-background shadow-sm" 
+          placeholder="Search by name, ID, or department…" 
+          value={search} 
+          onChange={(e) => setSearch(e.target.value)} 
+        />
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="bg-card border border-border shadow-sm rounded-xl overflow-hidden">
         {loading ? (
-          <div className="flex justify-center py-16"><Spinner size="lg" /></div>
+          <div className="flex justify-center py-24"><Spinner size="lg" /></div>
         ) : filtered.length === 0 ? (
           <EmptyState
-            icon={<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>}
+            icon={<Users className="w-10 h-10 text-muted-foreground" />}
             title={search ? "No results found" : "No employees yet"}
-            description={search ? "Try a different search term." : "Add your first employee to get started."}
-            action={!search && <button className="btn-primary" onClick={() => setAddOpen(true)}>Add Employee</button>}
+            description={search ? "We couldn't find anything matching your search term." : "Add your first employee to start building your team."}
+            action={!search && <Button onClick={() => setAddOpen(true)}>Add Employee</Button>}
           />
         ) : (
-          <table className="w-full">
-            <thead>
-              <tr style={{ borderBottom: "1px solid #1e3a6e" }}>
-                {["Employee","ID","Department","Email","Present Days",""].map((h) => (
-                  <th key={h} className="text-left text-xs font-medium text-slate-500 uppercase tracking-wider px-5 py-3">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader className="bg-slate-50/50">
+              <TableRow>
+                <TableHead className="w-[300px]">Employee</TableHead>
+                <TableHead>ID</TableHead>
+                <TableHead>Department</TableHead>
+                <TableHead className="hidden md:table-cell">Email</TableHead>
+                <TableHead>Present Days</TableHead>
+                <TableHead className="text-right"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {filtered.map((emp) => (
-                <tr key={emp.employee_id} className="transition-colors group" style={{ borderBottom: "1px solid rgba(30,58,110,0.4)" }}
-                  onMouseEnter={e=>e.currentTarget.style.backgroundColor="#0f2040"}
-                  onMouseLeave={e=>e.currentTarget.style.backgroundColor="transparent"}>
-                  <td className="px-5 py-3.5">
+                <TableRow key={emp.employee_id} className="group hover:bg-slate-50">
+                  <TableCell>
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ backgroundColor: "rgba(59,130,246,0.2)", border: "1px solid rgba(59,130,246,0.3)", color: "#60a5fa" }}>
+                      <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm shrink-0">
                         {emp.full_name.charAt(0).toUpperCase()}
                       </div>
-                      <span className="text-sm font-medium text-slate-200">{emp.full_name}</span>
+                      <div className="flex flex-col">
+                        <span className="font-medium text-foreground">{emp.full_name}</span>
+                        <span className="text-xs text-muted-foreground md:hidden">{emp.email}</span>
+                      </div>
                     </div>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <span className="font-mono text-xs text-slate-400 px-2 py-0.5 rounded" style={{ backgroundColor: "#0f2040" }}>{emp.employee_id}</span>
-                  </td>
-                  <td className="px-5 py-3.5"><span className="text-sm text-slate-400">{emp.department}</span></td>
-                  <td className="px-5 py-3.5"><span className="text-sm text-slate-400">{emp.email}</span></td>
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                      <span className="text-sm font-medium text-slate-300">{emp.total_present_days ?? 0} days</span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="font-mono text-xs text-muted-foreground bg-slate-100 px-2 py-1 rounded-md">{emp.employee_id}</span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
+                      {emp.department}
+                    </span>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell text-muted-foreground text-sm">
+                    {emp.email}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <span className="text-sm font-medium">{emp.total_present_days ?? 0}</span>
                     </div>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <button onClick={() => setDeleteTarget(emp)} className="btn-danger opacity-0 group-hover:opacity-100">
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                      Delete
-                    </button>
-                  </td>
-                </tr>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => setDeleteTarget(emp)} 
+                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         )}
       </div>
 
       <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add New Employee">
         <AddEmployeeForm onSubmit={handleAdd} loading={addLoading} error={addError} />
       </Modal>
-      <ConfirmDialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} loading={deleteLoading}
-        title="Delete Employee" message={`Are you sure you want to delete ${deleteTarget?.full_name}? This will also remove all their attendance records.`} />
+      <ConfirmDialog 
+        open={!!deleteTarget} 
+        onClose={() => setDeleteTarget(null)} 
+        onConfirm={handleDelete} 
+        loading={deleteLoading}
+        title="Delete Employee" 
+        message={`Are you sure you want to delete ${deleteTarget?.full_name}? This will also remove all their attendance records.`} 
+      />
     </div>
   );
 }
